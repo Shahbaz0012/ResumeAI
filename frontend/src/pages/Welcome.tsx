@@ -1,28 +1,19 @@
 import Navbar from "../components/Navbar";
+import Hero from "../components/Hero";
 
 function Welcome() {
   return (
-    <main className="min-h-screen bg-[#0B0D12] text-white">
-      {/* Navbar */}
+    <main className="relative min-h-screen overflow-hidden bg-[#0B0D12] text-white">
+      {/* Background Glow */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-32 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-600/20 blur-[140px]" />
+
+        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
+      </div>
+
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-6 text-center mt-24">
-        <h2 className="text-6xl font-bold leading-tight">
-          Your Career.
-          <br />
-          Powered by AI.
-        </h2>
-
-        <p className="mt-6 max-w-2xl text-lg text-gray-400">
-          Create ATS-friendly resumes with intelligent analysis,
-          personalized feedback, and AI-powered recommendations.
-        </p>
-
-        <button className="mt-10 rounded-full bg-blue-600 px-8 py-4 text-lg font-medium transition hover:bg-blue-500">
-          Get Started
-        </button>
-      </section>
+      <Hero />
     </main>
   );
 }
