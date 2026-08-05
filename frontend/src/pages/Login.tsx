@@ -1,11 +1,47 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import Logo from "../components/Logo";
 import Input from "../components/ui/Input";
+import api from "../services/api";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", response.data.token);
+
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || "Login failed"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#090b12] px-6">
@@ -32,23 +68,34 @@ export default function Login() {
             Sign in to continue your AI career journey.
           </p>
 
-          <form className="mt-8 space-y-5">
+          {error && (
+            <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
+          <form
+            className="mt-8 space-y-5"
+            onSubmit={handleLogin}
+          >
 
             <Input
               type="email"
               placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
-            {/* Password */}
             <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-3xl transition-all focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyan-500/20">
 
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="border-0 bg-transparent focus:ring-0"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-
-              <button
+                            <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="mr-5 text-gray-400 transition hover:text-white"
@@ -82,8 +129,10 @@ export default function Login() {
 
             </div>
 
-            {/* Login */}
+            {/* Login Button */}
             <button
+              type="submit"
+              disabled={loading}
               className="
                 w-full
                 rounded-2xl
@@ -102,9 +151,11 @@ export default function Login() {
                 hover:shadow-2xl
                 hover:shadow-blue-500/40
                 active:scale-95
+                disabled:opacity-50
+                disabled:cursor-not-allowed
               "
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
 
           </form>
