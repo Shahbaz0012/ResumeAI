@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   uploadResume,
   getResumeAnalysis,
+  getResumeHistory,
 } from "../controllers/resume.controller";
 import upload from "../middleware/upload.middleware";
 import { authenticate } from "../middleware/auth.middleware";
@@ -13,6 +14,12 @@ router.post(
   authenticate,
   upload.single("resume"),
   uploadResume
+);
+
+router.get(
+  "/history",
+  authenticate,
+  getResumeHistory
 );
 
 router.get(

@@ -9,10 +9,7 @@ export const uploadResume = async (
   res: Response
 ) => {
   try {
-
-    console.log(
-      "========== RESUME UPLOAD =========="
-    );
+    console.log("========== RESUME UPLOAD ==========");
 
     if (!req.userId) {
       return res.status(401).json({
@@ -55,10 +52,7 @@ export const uploadResume = async (
         },
       });
 
-    console.log(
-      "Resume Saved:",
-      resume.id
-    );
+    console.log("Resume Saved:", resume.id);
         await prisma.analysis.create({
       data: {
         atsScore: aiResult.atsScore,
@@ -119,6 +113,7 @@ export const uploadResume = async (
 
   }
 };
+
 export const getResumeAnalysis = async (
   req: AuthRequest,
   res: Response
@@ -176,7 +171,9 @@ export const getResumeAnalysis = async (
         atsScore: analysis.atsScore,
         summary: analysis.summary,
 
-        skills: JSON.parse(analysis.skills),
+        skills: JSON.parse(
+          analysis.skills
+        ),
 
         missingSkills: JSON.parse(
           analysis.missingSkills
@@ -200,6 +197,99 @@ export const getResumeAnalysis = async (
 
     console.error(
       "========== GET RESULT ERROR =========="
+    );
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Server Error",
+    });
+
+  }
+};
+
+export const getResumeHistory = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const resumes =
+      await prisma.resume.findMany({
+        where: {
+          userId: req.userId,
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+
+        include: {
+          analyses: true,
+        },
+      });
+          const history = resumes.map(
+      (resume) => ({
+        id: resume.id,
+
+        title: resume.title,
+
+        atsScore: resume.atsScore,
+
+        createdAt: resume.createdAt,
+
+        analysis:
+          resume.analyses.length > 0
+            ? {
+                summary:
+                  resume.analyses[0].summary,
+
+                skills: JSON.parse(
+                  resume.analyses[0].skills
+                ),
+
+                missingSkills: JSON.parse(
+                  resume.analyses[0]
+                    .missingSkills
+                ),
+
+                strengths: JSON.parse(
+                  resume.analyses[0]
+                    .strengths
+                ),
+
+                improvements: JSON.parse(
+                  resume.analyses[0]
+                    .improvements
+                ),
+
+                recommendedRoles: JSON.parse(
+                  resume.analyses[0]
+                    .recommendedRoles
+                ),
+              }
+            : null,
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      history,
+    });
+
+  } catch (error: any) {
+
+    console.error(
+      "========== HISTORY ERROR =========="
     );
 
     console.error(error);
