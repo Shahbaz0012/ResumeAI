@@ -29,16 +29,35 @@ export default function Upload() {
       formData.append("resume", file);
       formData.append("title", title);
 
-      await api.post("/resume/upload", formData);
+      const response = await api.post(
+        "/resume/upload",
+        formData
+      );
+
+      localStorage.setItem(
+        "resumeId",
+        response.data.resume.id
+      );
+
+      localStorage.setItem(
+        "analysis",
+        JSON.stringify(response.data)
+      );
 
       navigate("/processing");
-    } catch (err: any) {
+          } catch (err: any) {
+
+      console.error(err);
+
       setError(
         err.response?.data?.message ||
         "Upload failed"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -47,6 +66,7 @@ export default function Upload() {
       onSubmit={handleUpload}
       className="mt-8 space-y-6"
     >
+
       {error && (
         <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-red-400">
           {error}
@@ -57,7 +77,9 @@ export default function Upload() {
         type="text"
         placeholder="Resume Title"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) =>
+          setTitle(e.target.value)
+        }
         className="
           w-full
           rounded-2xl
@@ -71,7 +93,8 @@ export default function Upload() {
           focus:border-cyan-400
         "
       />
-            <div>
+
+      <div>
 
         <input
           type="file"
@@ -133,7 +156,9 @@ export default function Upload() {
           disabled:cursor-not-allowed
         "
       >
-        {loading ? "Uploading..." : "Upload Resume"}
+        {loading
+          ? "Uploading..."
+          : "Upload Resume"}
       </button>
 
     </form>

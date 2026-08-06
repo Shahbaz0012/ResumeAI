@@ -119,3 +119,96 @@ export const uploadResume = async (
 
   }
 };
+export const getResumeAnalysis = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { id } = req.params;
+
+    const resume =
+      await prisma.resume.findFirst({
+        where: {
+          id,
+          userId: req.userId,
+        },
+
+        include: {
+          analyses: true,
+        },
+      });
+
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message: "Resume not found",
+      });
+    }
+
+    const analysis =
+      resume.analyses[0];
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+        return res.status(200).json({
+      success: true,
+
+      resume: {
+        id: resume.id,
+        title: resume.title,
+        atsScore: resume.atsScore,
+        createdAt: resume.createdAt,
+      },
+
+      analysis: {
+        atsScore: analysis.atsScore,
+        summary: analysis.summary,
+
+        skills: JSON.parse(analysis.skills),
+
+        missingSkills: JSON.parse(
+          analysis.missingSkills
+        ),
+
+        strengths: JSON.parse(
+          analysis.strengths
+        ),
+
+        improvements: JSON.parse(
+          analysis.improvements
+        ),
+
+        recommendedRoles: JSON.parse(
+          analysis.recommendedRoles
+        ),
+      },
+    });
+
+  } catch (error: any) {
+
+    console.error(
+      "========== GET RESULT ERROR =========="
+    );
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Server Error",
+    });
+
+  }
+};
