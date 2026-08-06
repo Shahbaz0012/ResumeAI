@@ -9,7 +9,10 @@ export const uploadResume = async (
   res: Response
 ) => {
   try {
-    console.log("========== RESUME UPLOAD ==========");
+
+    console.log(
+      "========== RESUME UPLOAD =========="
+    );
 
     if (!req.userId) {
       return res.status(401).json({
@@ -26,33 +29,47 @@ export const uploadResume = async (
     }
 
     const title =
-      req.body.title || req.file.originalname;
+      req.body.title ||
+      req.file.originalname;
 
     console.log("Reading PDF...");
 
     const extractedText =
-      await parseResume(req.file.path);
+      await parseResume(
+        req.file.path
+      );
 
     console.log("PDF Parsed");
 
-    console.log("Sending Resume To AI...");
+    console.log(
+      "Sending Resume To AI..."
+    );
 
     const aiResult =
-      await analyzeResume(extractedText);
+      await analyzeResume(
+        extractedText
+      );
 
-    console.log("AI Analysis Finished");
+    console.log(
+      "AI Analysis Finished"
+    );
 
     const resume =
       await prisma.resume.create({
         data: {
           title,
           fileUrl: req.file.path,
-          atsScore: aiResult.atsScore,
+          atsScore:
+            aiResult.atsScore,
           userId: req.userId,
         },
       });
 
-    console.log("Resume Saved:", resume.id);
+    console.log(
+      "Resume Saved:",
+      resume.id
+    );
+    //part 2
         await prisma.analysis.create({
       data: {
         atsScore: aiResult.atsScore,
@@ -89,6 +106,7 @@ export const uploadResume = async (
 
     return res.status(200).json({
       success: true,
+
       message:
         "Resume uploaded and analyzed successfully.",
 
@@ -150,14 +168,14 @@ export const getResumeAnalysis = async (
 
     const analysis =
       resume.analyses[0];
-
-    if (!analysis) {
+          if (!analysis) {
       return res.status(404).json({
         success: false,
         message: "Analysis not found",
       });
     }
-        return res.status(200).json({
+
+    return res.status(200).json({
       success: true,
 
       resume: {
@@ -169,6 +187,7 @@ export const getResumeAnalysis = async (
 
       analysis: {
         atsScore: analysis.atsScore,
+
         summary: analysis.summary,
 
         skills: JSON.parse(
@@ -251,10 +270,12 @@ export const getResumeHistory = async (
           resume.analyses.length > 0
             ? {
                 summary:
-                  resume.analyses[0].summary,
+                  resume.analyses[0]
+                    .summary,
 
                 skills: JSON.parse(
-                  resume.analyses[0].skills
+                  resume.analyses[0]
+                    .skills
                 ),
 
                 missingSkills: JSON.parse(
@@ -290,6 +311,70 @@ export const getResumeHistory = async (
 
     console.error(
       "========== HISTORY ERROR =========="
+    );
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Server Error",
+    });
+
+  }
+};
+
+export const deleteResume = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { id } = req.params;
+
+    const resume =
+      await prisma.resume.findFirst({
+        where: {
+          id,
+          userId: req.userId,
+        },
+      });
+
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message: "Resume not found",
+      });
+    }
+        await prisma.analysis.deleteMany({
+      where: {
+        resumeId: id,
+      },
+    });
+
+    await prisma.resume.delete({
+      where: {
+        id,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Resume deleted successfully.",
+    });
+
+  } catch (error: any) {
+
+    console.error(
+      "========== DELETE ERROR =========="
     );
 
     console.error(error);

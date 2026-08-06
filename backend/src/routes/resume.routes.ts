@@ -3,7 +3,9 @@ import {
   uploadResume,
   getResumeAnalysis,
   getResumeHistory,
+  deleteResume,
 } from "../controllers/resume.controller";
+
 import upload from "../middleware/upload.middleware";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -26,6 +28,12 @@ router.get(
   "/:id",
   authenticate,
   getResumeAnalysis
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  deleteResume
 );
 
 export default router;
