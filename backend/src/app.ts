@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import dashboardRoutes from "./routes/dashboard.routes";
 
 import authRoutes from "./routes/auth.routes";
 import resumeRoutes from "./routes/resume.routes";
@@ -28,5 +29,5 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
 export default app;
