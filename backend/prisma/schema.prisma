@@ -12,21 +12,21 @@ model User {
   name      String
   email     String   @unique
   password  String
-  resumes   Resume[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  resumes   Resume[]
 }
 
 model Resume {
-  id          String     @id @default(cuid())
-  title       String
-  fileUrl     String
-  atsScore    Int?
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  analyses    Analysis[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  title     String
+  fileUrl   String
+  atsScore  Int?
+  userId    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  analyses  Analysis[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Analysis {
@@ -40,6 +40,6 @@ model Analysis {
   aiSuggestions      String
   interviewReadiness String
   resumeId           String
-  resume             Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
+  resume             Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
