@@ -20,9 +20,14 @@ model User {
 }
 
 model Resume {
-  id      String @id @default(cuid())
-  title   String
+  id String @id @default(cuid())
+
+  title String
+
   fileUrl String
+
+  // Parsed resume text
+  resumeText String? @db.Text
 
   atsScore Int?
 
@@ -31,7 +36,8 @@ model Resume {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   analyses Analysis[]
 }
 
@@ -39,12 +45,15 @@ model Analysis {
   id String @id @default(cuid())
 
   atsScore Int
-  summary  String
 
-  skills        String
+  summary String
+
+  skills String
+
   missingSkills String
 
-  strengths    String
+  strengths String
+
   improvements String
 
   recommendedRoles String

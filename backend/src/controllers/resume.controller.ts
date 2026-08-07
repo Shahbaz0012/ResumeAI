@@ -55,15 +55,18 @@ export const uploadResume = async (
     );
 
     const resume =
-      await prisma.resume.create({
-        data: {
-          title,
-          fileUrl: req.file.path,
-          atsScore:
-            aiResult.atsScore,
-          userId: req.userId,
-        },
-      });
+   await prisma.resume.create({
+    data: {
+      title,
+      fileUrl: req.file.path,
+
+      resumeText: extractedText,
+
+      atsScore: aiResult.atsScore,
+
+      userId: req.userId,
+    },
+  });
 
     console.log(
       "Resume Saved:",

@@ -2,10 +2,11 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
-import dashboardRoutes from "./routes/dashboard.routes";
 
 import authRoutes from "./routes/auth.routes";
 import resumeRoutes from "./routes/resume.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
+import jobRoutes from "./routes/job.routes";
 
 dotenv.config();
 
@@ -16,9 +17,12 @@ app.use(cors());
 app.use(express.json());
 
 // Static Folder
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"))
+);
 
-// Routes
+// Health Check
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -27,7 +31,10 @@ app.get("/", (req, res) => {
   });
 });
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/job", jobRoutes);
+
 export default app;
