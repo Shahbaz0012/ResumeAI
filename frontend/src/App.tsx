@@ -10,6 +10,7 @@ import Results from "./pages/Results";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import JobMatch from "./pages/JobMatch";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/history" element={<History />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/job-match" element={<JobMatch />} />
     </Routes>
   );
 }

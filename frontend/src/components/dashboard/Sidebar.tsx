@@ -2,11 +2,14 @@ import {
   LayoutDashboard,
   FileText,
   History,
+  Briefcase,
   User,
   Settings,
   LogOut,
 } from "lucide-react";
+
 import { NavLink } from "react-router-dom";
+
 import Logo from "../Logo";
 
 const menuItems = [
@@ -15,21 +18,31 @@ const menuItems = [
     icon: LayoutDashboard,
     path: "/dashboard",
   },
+
   {
     title: "Analyze Resume",
     icon: FileText,
     path: "/upload",
   },
+
   {
     title: "History",
     icon: History,
     path: "/history",
   },
+
+  {
+    title: "Job Match",
+    icon: Briefcase,
+    path: "/job-match",
+  },
+
   {
     title: "Profile",
     icon: User,
     path: "/profile",
   },
+
   {
     title: "Settings",
     icon: Settings,
@@ -39,16 +52,28 @@ const menuItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="flex h-screen w-72 flex-col border-r border-white/10 bg-[#0b0f19]/95 backdrop-blur-xl">
-
+    <aside
+      className="
+        flex
+        min-h-screen
+        w-72
+        flex-col
+        border-r
+        border-white/10
+        bg-[#11131c]
+      "
+    >
       {/* Logo */}
-      <div className="flex items-center justify-center border-b border-white/10 p-6">
-        <Logo />
-      </div>
 
-      {/* Navigation */}
+      <div className="flex items-center justify-center border-b border-white/10 p-6">
+
+        <Logo />
+
+      </div>      {/* Navigation */}
       <nav className="flex-1 space-y-2 p-5">
+
         {menuItems.map((item) => {
+
           const Icon = item.icon;
 
           return (
@@ -64,14 +89,20 @@ export default function Sidebar() {
               }
             >
               <Icon size={22} />
-              {item.title}
+
+              <span>{item.title}</span>
+
             </NavLink>
           );
+
         })}
+
       </nav>
 
       {/* Logout */}
+
       <div className="border-t border-white/10 p-5">
+
         <button
           className="
             flex
@@ -89,9 +120,13 @@ export default function Sidebar() {
           "
         >
           <LogOut size={22} />
+
           Logout
+
         </button>
+
       </div>
+
     </aside>
   );
 }

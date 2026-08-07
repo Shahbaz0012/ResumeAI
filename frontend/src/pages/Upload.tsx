@@ -1,166 +1,342 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-export default function Upload() {
+interface Analysis {
+  atsScore: number;
+  summary: string;
+  skills: string[];
+  missingSkills: string[];
+  strengths: string[];
+  improvements: string[];
+  recommendedRoles: string[];
+}
+
+interface JobMatchResult {
+  matchScore: number;
+  matchingSkills: string[];
+  missingSkills: string[];
+  suggestions: string[];
+  summary: string;
+}
+
+export default function Results() {
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [analysis, setAnalysis] =
+    useState<Analysis | null>(null);
 
-  const handleUpload = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
+  const [jobDescription, setJobDescription] =
+    useState("");
 
-    if (!file) {
-      setError("Please select a PDF resume.");
+  const [jobMatch, setJobMatch] =
+    useState<JobMatchResult | null>(null);
+
+  const [matching, setMatching] =
+    useState(false);
+
+  useEffect(() => {
+
+    const stored =
+      localStorage.getItem("analysis");
+
+    if (!stored) {
+      navigate("/dashboard");
+      return;
+    }
+
+    const data = JSON.parse(stored);
+
+    setAnalysis(data.analysis);
+
+  }, [navigate]);
+    const analyzeJobMatch = async () => {
+
+    if (!jobDescription.trim()) {
+      alert("Please enter a job description.");
       return;
     }
 
     try {
-      setLoading(true);
-      setError("");
 
-      const formData = new FormData();
+      setMatching(true);
 
-      formData.append("resume", file);
-      formData.append("title", title);
+      const token =
+        localStorage.getItem("token");
 
-      const response = await api.post(
-        "/resume/upload",
-        formData
+      const resumeId =
+        localStorage.getItem("resumeId");
+
+      const response =
+        await api.post(
+          "/job/match",
+          {
+            resumeId,
+            jobDescription,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+      setJobMatch(
+        response.data.result
       );
 
-      localStorage.setItem(
-        "resumeId",
-        response.data.resume.id
-      );
+    } catch (error) {
 
-      localStorage.setItem(
-        "analysis",
-        JSON.stringify(response.data)
-      );
+      console.error(error);
 
-      navigate("/processing");
-          } catch (err: any) {
-
-      console.error(err);
-
-      setError(
-        err.response?.data?.message ||
-        "Upload failed"
+      alert(
+        "Failed to analyze job match."
       );
 
     } finally {
 
-      setLoading(false);
+      setMatching(false);
 
     }
+
   };
 
-  return (
-    <form
-      onSubmit={handleUpload}
-      className="mt-8 space-y-6"
-    >
+  if (!analysis) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#090b12] text-2xl text-white">
+        Loading...
+      </div>
+    );
+  }
 
-      {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-red-400">
-          {error}
-        </div>
-      )}
+  const Card = ({
+    title,
+    items,
+  }: {
+    title: string;
+    items: string[];
+  }) => (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+      <h3 className="mb-4 text-xl font-semibold text-white">
+        {title}
+      </h3>
 
-      <input
-        type="text"
-        placeholder="Resume Title"
-        value={title}
-        onChange={(e) =>
-          setTitle(e.target.value)
-        }
-        className="
-          w-full
-          rounded-2xl
-          border
-          border-white/10
-          bg-white/[0.06]
-          px-5
-          py-4
-          text-white
-          outline-none
-          focus:border-cyan-400
-        "
-      />
+      <ul className="space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={index}
+            className="text-gray-300"
+          >
+            • {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );  return (
+    <div className="min-h-screen bg-[#090b12] px-6 py-10">
 
-      <div>
+      <div className="mx-auto max-w-6xl">
 
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => {
-            if (e.target.files?.length) {
-              setFile(e.target.files[0]);
-            }
-          }}
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-white/10
-            bg-white/[0.06]
-            p-4
-            text-white
-            file:mr-4
-            file:rounded-xl
-            file:border-0
-            file:bg-blue-600
-            file:px-4
-            file:py-2
-            file:text-white
-            file:cursor-pointer
-          "
-        />
+        <h1 className="mb-2 text-center text-5xl font-bold text-white">
+          Resume Analysis
+        </h1>
 
-        {file && (
-          <p className="mt-3 text-sm text-green-400">
-            Selected File: {file.name}
+        <p className="mb-10 text-center text-gray-400">
+          Your AI-powered resume report
+        </p>
+
+        <div className="mb-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 p-8 text-center">
+
+          <h2 className="text-2xl font-semibold text-white">
+            ATS Score
+          </h2>
+
+          <p className="mt-4 text-7xl font-bold text-cyan-400">
+            {analysis.atsScore}
           </p>
-        )}
+
+          <p className="mt-3 text-gray-300">
+            out of 100
+          </p>
+
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+
+          <h2 className="mb-4 text-2xl font-semibold text-white">
+            AI Summary
+          </h2>
+
+          <p className="leading-8 text-gray-300">
+            {analysis.summary}
+          </p>
+
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+
+          <Card
+            title="Skills"
+            items={analysis.skills}
+          />
+
+          <Card
+            title="Missing Skills"
+            items={analysis.missingSkills}
+          />
+
+          <Card
+            title="Strengths"
+            items={analysis.strengths}
+          />
+
+          <Card
+            title="Improvements"
+            items={analysis.improvements}
+          />
+
+          <Card
+            title="Recommended Roles"
+            items={analysis.recommendedRoles}
+          />
+
+        </div>        {/* ===========================
+            AI Job Match
+        ============================ */}
+
+        <div className="mt-12 rounded-3xl border border-white/10 bg-white/[0.04] p-8">
+
+          <h2 className="text-3xl font-bold text-white">
+            🎯 AI Job Match
+          </h2>
+
+          <p className="mt-2 text-gray-400">
+            Paste a job description and compare it with your resume.
+          </p>
+
+          <textarea
+            value={jobDescription}
+            onChange={(e) =>
+              setJobDescription(e.target.value)
+            }
+            placeholder="Paste the complete job description here..."
+            className="
+              mt-6
+              h-64
+              w-full
+              rounded-2xl
+              border
+              border-white/10
+              bg-[#11131c]
+              p-5
+              text-white
+              outline-none
+              resize-none
+            "
+          />
+
+          <button
+            onClick={analyzeJobMatch}
+            disabled={
+              matching ||
+              !jobDescription.trim()
+            }
+            className="
+              mt-6
+              rounded-2xl
+              bg-gradient-to-r
+              from-blue-600
+              to-cyan-500
+              px-8
+              py-4
+              text-lg
+              font-semibold
+              text-white
+              transition-all
+              hover:scale-105
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
+          >
+            {matching
+              ? "Analyzing..."
+              : "Analyze Job Match"}
+          </button>
+
+        </div>        {jobMatch && (
+
+          <div className="mt-10 space-y-8">
+
+            <div className="rounded-3xl border border-green-500/20 bg-green-500/10 p-8 text-center">
+
+              <h2 className="text-2xl font-bold text-white">
+                Match Score
+              </h2>
+
+              <p className="mt-4 text-7xl font-bold text-green-400">
+                {jobMatch.matchScore}%
+              </p>
+
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+
+              <Card
+                title="✅ Matching Skills"
+                items={jobMatch.matchingSkills}
+              />
+
+              <Card
+                title="❌ Missing Skills"
+                items={jobMatch.missingSkills}
+              />
+
+            </div>
+
+            <Card
+              title="💡 AI Suggestions"
+              items={jobMatch.suggestions}
+            />
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+
+              <h2 className="mb-4 text-2xl font-semibold text-white">
+                AI Job Match Summary
+              </h2>
+
+              <p className="leading-8 text-gray-300">
+                {jobMatch.summary}
+              </p>
+
+            </div>
+
+          </div>
+
+        )}        <div className="mt-10 flex justify-center">
+
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="
+              rounded-2xl
+              bg-gradient-to-r
+              from-blue-600
+              to-cyan-500
+              px-8
+              py-4
+              text-lg
+              font-semibold
+              text-white
+              transition-all
+              hover:scale-105
+            "
+          >
+            Back to Dashboard
+          </button>
+
+        </div>
 
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="
-          w-full
-          rounded-2xl
-          bg-gradient-to-r
-          from-blue-600
-          to-cyan-500
-          py-4
-          text-lg
-          font-semibold
-          text-white
-          shadow-lg
-          shadow-blue-500/20
-          transition-all
-          duration-300
-          hover:scale-[1.02]
-          hover:shadow-2xl
-          hover:shadow-blue-500/40
-          active:scale-95
-          disabled:opacity-50
-          disabled:cursor-not-allowed
-        "
-      >
-        {loading
-          ? "Uploading..."
-          : "Upload Resume"}
-      </button>
-
-    </form>
+    </div>
   );
 }
