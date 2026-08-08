@@ -13,6 +13,7 @@ import Settings from "./pages/Settings";
 import JobMatch from "./pages/JobMatch";
 import ResumeImprove from "./pages/ResumeImprove";
 import CoverLetter from "./pages/CoverLetter";
+import Documents from "./pages/Documents";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
       <Route path="/job-match" element={<JobMatch />} />
       <Route path="/resume-improve" element={<ResumeImprove />} />
       <Route path="/cover-letter" element={<CoverLetter />} />
+      <Route path="/documents" element={<Documents />} />
     </Routes>
   );
 }

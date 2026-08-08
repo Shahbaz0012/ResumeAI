@@ -1,339 +1,473 @@
-import { useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useState,
+} from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import api from "../services/api";
 
-interface Analysis {
-  atsScore: number;
-  summary: string;
-  skills: string[];
-  missingSkills: string[];
-  strengths: string[];
-  improvements: string[];
-  recommendedRoles: string[];
-}
+export default function Upload() {
 
-interface JobMatchResult {
-  matchScore: number;
-  matchingSkills: string[];
-  missingSkills: string[];
-  suggestions: string[];
-  summary: string;
-}
-
-export default function Results() {
   const navigate = useNavigate();
 
-  const [analysis, setAnalysis] =
-    useState<Analysis | null>(null);
+  const [file, setFile] =
+    useState<File | null>(null);
 
-  const [jobDescription, setJobDescription] =
+  const [title, setTitle] =
     useState("");
 
-  const [jobMatch, setJobMatch] =
-    useState<JobMatchResult | null>(null);
-
-  const [matching, setMatching] =
+  const [loading, setLoading] =
     useState(false);
 
-  useEffect(() => {
+  const [error, setError] =
+    useState("");
 
-    const stored =
-      localStorage.getItem("analysis");
+  const handleFileChange = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
 
-    if (!stored) {
-      navigate("/dashboard");
+    const selectedFile =
+      event.target.files?.[0];
+
+    if (!selectedFile) {
       return;
     }
 
-    const data = JSON.parse(stored);
+    setError("");
 
-    setAnalysis(data.analysis);
+    if (
+      selectedFile.type !==
+      "application/pdf"
+    ) {
+      setFile(null);
 
-  }, [navigate]);
-    const analyzeJobMatch = async () => {
+      setError(
+        "Please select a PDF file."
+      );
 
-    if (!jobDescription.trim()) {
-      alert("Please enter a job description.");
+      event.target.value = "";
+
+      return;
+    }
+
+    setFile(selectedFile);
+
+    if (!title.trim()) {
+      setTitle(
+        selectedFile.name
+          .replace(".pdf", "")
+      );
+    }
+  };
+
+  const handleSubmit = async (
+    event: FormEvent
+  ) => {
+
+    event.preventDefault();
+
+    if (!file) {
+      setError(
+        "Please select a PDF resume."
+      );
+
       return;
     }
 
     try {
 
-      setMatching(true);
+      setLoading(true);
+
+      setError("");
 
       const token =
         localStorage.getItem("token");
 
-      const resumeId =
-        localStorage.getItem("resumeId");
+      const formData =
+        new FormData();
+
+      formData.append(
+        "resume",
+        file
+      );
+
+      formData.append(
+        "title",
+        title.trim() ||
+          file.name
+      );
 
       const response =
         await api.post(
-          "/job/match",
-          {
-            resumeId,
-            jobDescription,
-          },
+          "/resume/upload",
+          formData,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
 
-      setJobMatch(
-        response.data.result
+      const resume =
+        response.data.resume;
+
+      const analysis =
+        response.data.analysis;
+
+      if (resume?.id) {
+        localStorage.setItem(
+          "resumeId",
+          resume.id
+        );
+      }
+
+      localStorage.setItem(
+        "analysis",
+        JSON.stringify({
+          resume,
+          analysis,
+        })
       );
 
-    } catch (error) {
+      navigate("/results");
+
+    } catch (error: any) {
 
       console.error(error);
 
-      alert(
-        "Failed to analyze job match."
+      setError(
+        error.response?.data?.message ||
+        "Failed to upload resume."
       );
 
     } finally {
 
-      setMatching(false);
+      setLoading(false);
 
     }
-
-  };
-
-  if (!analysis) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#090b12] text-2xl text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  const Card = ({
-    title,
-    items,
-  }: {
-    title: string;
-    items: string[];
-  }) => (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-      <h3 className="mb-4 text-xl font-semibold text-white">
-        {title}
-      </h3>
-
-      <ul className="space-y-2">
-        {items.map((item, index) => (
-          <li
-            key={index}
-            className="text-gray-300"
-          >
-            • {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );  return (
+  };  return (
     <div className="min-h-screen bg-[#090b12] px-6 py-10">
 
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-4xl">
 
-        <h1 className="mb-2 text-center text-5xl font-bold text-white">
-          Resume Analysis
-        </h1>
+        {/* Header */}
 
-        <p className="mb-10 text-center text-gray-400">
-          Your AI-powered resume report
-        </p>
+        <div className="mb-10 text-center">
 
-        <div className="mb-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 p-8 text-center">
+          <h1 className="
+            text-5xl
+            font-bold
+            text-white
+          ">
+            Analyze Your Resume
+          </h1>
 
-          <h2 className="text-2xl font-semibold text-white">
-            ATS Score
-          </h2>
-
-          <p className="mt-4 text-7xl font-bold text-cyan-400">
-            {analysis.atsScore}
-          </p>
-
-          <p className="mt-3 text-gray-300">
-            out of 100
-          </p>
-
-        </div>
-
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-
-          <h2 className="mb-4 text-2xl font-semibold text-white">
-            AI Summary
-          </h2>
-
-          <p className="leading-8 text-gray-300">
-            {analysis.summary}
+          <p className="
+            mt-4
+            text-lg
+            text-gray-400
+          ">
+            Upload your resume and let AI
+            analyze it for ATS optimization.
           </p>
 
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* Upload Card */}
 
-          <Card
-            title="Skills"
-            items={analysis.skills}
-          />
+        <form
+          onSubmit={handleSubmit}
+          className="
+            rounded-3xl
+            border
+            border-white/10
+            bg-white/[0.04]
+            p-8
+            shadow-2xl
+            md:p-10
+          "
+        >
 
-          <Card
-            title="Missing Skills"
-            items={analysis.missingSkills}
-          />
+          {/* Title */}
 
-          <Card
-            title="Strengths"
-            items={analysis.strengths}
-          />
+          <div className="mb-8">
 
-          <Card
-            title="Improvements"
-            items={analysis.improvements}
-          />
+            <label
+              htmlFor="resume-title"
+              className="
+                mb-3
+                block
+                text-sm
+                font-semibold
+                text-gray-300
+              "
+            >
+              Resume Title
+            </label>
 
-          <Card
-            title="Recommended Roles"
-            items={analysis.recommendedRoles}
-          />
+            <input
+              id="resume-title"
+              type="text"
+              value={title}
+              onChange={(event) =>
+                setTitle(
+                  event.target.value
+                )
+              }
+              placeholder="e.g. Software Engineer Resume"
+              className="
+                w-full
+                rounded-2xl
+                border
+                border-white/10
+                bg-[#11131c]
+                px-5
+                py-4
+                text-white
+                outline-none
+                transition
+                focus:border-cyan-500/50
+                focus:ring-2
+                focus:ring-cyan-500/20
+              "
+            />
 
-        </div>        {/* ===========================
-            AI Job Match
-        ============================ */}
+          </div>
 
-        <div className="mt-12 rounded-3xl border border-white/10 bg-white/[0.04] p-8">
+          {/* PDF Upload */}
 
-          <h2 className="text-3xl font-bold text-white">
-            🎯 AI Job Match
-          </h2>
+          <div>
 
-          <p className="mt-2 text-gray-400">
-            Paste a job description and compare it with your resume.
-          </p>
+            <label
+              htmlFor="resume-file"
+              className="
+                flex
+                min-h-[280px]
+                cursor-pointer
+                flex-col
+                items-center
+                justify-center
+                rounded-3xl
+                border-2
+                border-dashed
+                border-cyan-500/30
+                bg-cyan-500/[0.03]
+                px-6
+                py-12
+                text-center
+                transition-all
+                hover:border-cyan-400/60
+                hover:bg-cyan-500/[0.06]
+              "
+            >
 
-          <textarea
-            value={jobDescription}
-            onChange={(e) =>
-              setJobDescription(e.target.value)
-            }
-            placeholder="Paste the complete job description here..."
-            className="
+              <div className="
+                flex
+                h-20
+                w-20
+                items-center
+                justify-center
+                rounded-3xl
+                bg-cyan-500/10
+                text-4xl
+              ">
+                📄
+              </div>
+
+              {file ? (
+
+                <>
+                  <h2 className="
+                    mt-6
+                    max-w-full
+                    truncate
+                    text-xl
+                    font-semibold
+                    text-white
+                  ">
+                    {file.name}
+                  </h2>
+
+                  <p className="
+                    mt-2
+                    text-sm
+                    text-cyan-300
+                  ">
+                    {(file.size / 1024 / 1024)
+                      .toFixed(2)}{" "}
+                    MB
+                  </p>
+
+                  <p className="
+                    mt-3
+                    text-sm
+                    text-gray-400
+                  ">
+                    Click to choose a
+                    different PDF
+                  </p>
+                </>
+
+              ) : (
+
+                <>
+                  <h2 className="
+                    mt-6
+                    text-2xl
+                    font-semibold
+                    text-white
+                  ">
+                    Choose your resume
+                  </h2>
+
+                  <p className="
+                    mt-2
+                    text-gray-400
+                  ">
+                    Click here to select a PDF
+                    from your computer.
+                  </p>
+
+                  <p className="
+                    mt-4
+                    text-sm
+                    text-gray-500
+                  ">
+                    PDF files only
+                  </p>
+                </>
+
+              )}
+
+            </label>
+
+            <input
+              id="resume-file"
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+          </div>
+
+          {/* Error */}
+
+          {error && (
+            <div className="
               mt-6
-              h-64
+              rounded-2xl
+              border
+              border-red-500/20
+              bg-red-500/10
+              px-5
+              py-4
+              text-sm
+              text-red-400
+            ">
+              {error}
+            </div>
+          )}          {/* Submit Button */}
+
+          <button
+            type="submit"
+            disabled={loading || !file}
+            className="
+              mt-8
+              w-full
+              rounded-2xl
+              bg-gradient-to-r
+              from-blue-600
+              to-cyan-500
+              px-8
+              py-4
+              text-lg
+              font-semibold
+              text-white
+              shadow-lg
+              shadow-blue-600/20
+              transition-all
+              duration-300
+              hover:scale-[1.01]
+              hover:shadow-cyan-500/20
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              disabled:hover:scale-100
+            "
+          >
+            {loading
+              ? "Analyzing Resume..."
+              : "Upload & Analyze Resume"}
+          </button>
+
+          {/* Back Button */}
+
+          <button
+            type="button"
+            onClick={() =>
+              navigate("/dashboard")
+            }
+            disabled={loading}
+            className="
+              mt-4
               w-full
               rounded-2xl
               border
               border-white/10
-              bg-[#11131c]
-              p-5
-              text-white
-              outline-none
-              resize-none
-            "
-          />
-
-          <button
-            onClick={analyzeJobMatch}
-            disabled={
-              matching ||
-              !jobDescription.trim()
-            }
-            className="
-              mt-6
-              rounded-2xl
-              bg-gradient-to-r
-              from-blue-600
-              to-cyan-500
               px-8
               py-4
-              text-lg
               font-semibold
-              text-white
+              text-gray-300
               transition-all
-              hover:scale-105
+              hover:bg-white/5
+              hover:text-white
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
           >
-            {matching
-              ? "Analyzing..."
-              : "Analyze Job Match"}
+            ← Back to Dashboard
           </button>
 
-        </div>        {jobMatch && (
+          {/* Info */}
 
-          <div className="mt-10 space-y-8">
+          <div className="
+            mt-8
+            rounded-2xl
+            border
+            border-white/5
+            bg-black/10
+            p-5
+          ">
 
-            <div className="rounded-3xl border border-green-500/20 bg-green-500/10 p-8 text-center">
+            <div className="
+              flex
+              flex-col
+              gap-3
+              text-sm
+              text-gray-500
+              md:flex-row
+              md:items-center
+              md:justify-between
+            ">
+              <span>
+                ✓ PDF format supported
+              </span>
 
-              <h2 className="text-2xl font-bold text-white">
-                Match Score
-              </h2>
+              <span>
+                ✓ AI-powered analysis
+              </span>
 
-              <p className="mt-4 text-7xl font-bold text-green-400">
-                {jobMatch.matchScore}%
-              </p>
-
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-
-              <Card
-                title="✅ Matching Skills"
-                items={jobMatch.matchingSkills}
-              />
-
-              <Card
-                title="❌ Missing Skills"
-                items={jobMatch.missingSkills}
-              />
-
-            </div>
-
-            <Card
-              title="💡 AI Suggestions"
-              items={jobMatch.suggestions}
-            />
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-
-              <h2 className="mb-4 text-2xl font-semibold text-white">
-                AI Job Match Summary
-              </h2>
-
-              <p className="leading-8 text-gray-300">
-                {jobMatch.summary}
-              </p>
-
+              <span>
+                ✓ ATS optimization
+              </span>
             </div>
 
           </div>
 
-        )}        <div className="mt-10 flex justify-center">
-
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="
-              rounded-2xl
-              bg-gradient-to-r
-              from-blue-600
-              to-cyan-500
-              px-8
-              py-4
-              text-lg
-              font-semibold
-              text-white
-              transition-all
-              hover:scale-105
-            "
-          >
-            Back to Dashboard
-          </button>
-
-        </div>
+        </form>
 
       </div>
 

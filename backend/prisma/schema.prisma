@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 1. ADD THIS ENUM
+enum DocumentType {
+  COVER_LETTER
+  SUMMARY
+  RESUME_IMPROVEMENT
+}
+
 model User {
   id       String @id @default(cuid())
   name     String
@@ -57,7 +64,8 @@ model Analysis {
 
 model GeneratedDocument {
   id      String       @id @default(cuid())
-  type    DocumentType
+  // 2. CHANGE THIS FROM String TO DocumentType
+  type    DocumentType 
   title   String
   content String       @db.Text
 
@@ -69,12 +77,4 @@ model GeneratedDocument {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   resume Resume? @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-}
-
-enum DocumentType {
-  COVER_LETTER
-  RESUME_SUMMARY
-  INTERVIEW_PREP
-  COLD_EMAIL
-  OTHER
 }

@@ -6,6 +6,8 @@ import { AuthRequest } from "../middleware/auth.middleware";
 
 import { improveResume } from "../services/improve.service";
 
+import { saveGeneratedDocument } from "../services/document.service";
+
 export const improveResumeController = async (
   req: AuthRequest,
   res: Response
@@ -25,7 +27,8 @@ export const improveResumeController = async (
     if (!resumeId) {
       return res.status(400).json({
         success: false,
-        message: "Resume ID is required.",
+        message:
+          "Resume ID is required.",
       });
     }
 
@@ -55,13 +58,49 @@ export const improveResumeController = async (
     const result =
       await improveResume(
         resume.resumeText
-      );    return res.status(200).json({
+      );
+
+    const improvementContent = JSON.stringify({
+      professionalSummary:
+        result.professionalSummary,
+
+      improvedSkills:
+        result.improvedSkills,
+
+      experienceRewrite:
+        result.experienceRewrite,
+
+      projectSuggestions:
+        result.projectSuggestions,
+
+      atsKeywords:
+        result.atsKeywords,
+
+      finalTips:
+        result.finalTips,
+    });    const document =
+      await saveGeneratedDocument({
+        userId: req.userId,
+        resumeId: resume.id,
+        type: "RESUME_IMPROVEMENT",
+        title: `Resume Improvement - ${resume.title}`,
+        content: improvementContent,
+      });
+
+    return res.status(200).json({
       success: true,
 
       resume: {
         id: resume.id,
         title: resume.title,
         atsScore: resume.atsScore,
+      },
+
+      document: {
+        id: document.id,
+        type: document.type,
+        title: document.title,
+        createdAt: document.createdAt,
       },
 
       improvement: {

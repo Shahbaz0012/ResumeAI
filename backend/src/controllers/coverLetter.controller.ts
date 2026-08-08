@@ -6,6 +6,8 @@ import { AuthRequest } from "../middleware/auth.middleware";
 
 import { generateCoverLetter } from "../services/coverLetter.service";
 
+import { saveGeneratedDocument } from "../services/document.service";
+
 export const generateCoverLetterController = async (
   req: AuthRequest,
   res: Response
@@ -62,12 +64,26 @@ export const generateCoverLetterController = async (
         jobDescription
       );
 
-    return res.status(200).json({
+    const document =
+      await saveGeneratedDocument({
+        userId: req.userId,
+        resumeId: resume.id,
+        type: "COVER_LETTER",
+        title: `Cover Letter - ${resume.title}`,
+        content: coverLetter,
+      });    return res.status(200).json({
       success: true,
 
       resume: {
         id: resume.id,
         title: resume.title,
+      },
+
+      document: {
+        id: document.id,
+        type: document.type,
+        title: document.title,
+        createdAt: document.createdAt,
       },
 
       coverLetter,

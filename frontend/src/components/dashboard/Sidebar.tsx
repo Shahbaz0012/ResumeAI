@@ -5,6 +5,7 @@ import {
   Briefcase,
   Sparkles,
   Mail,
+  FolderOpen,
   User,
   Settings,
   LogOut,
@@ -52,6 +53,12 @@ const menuItems = [
   },
 
   {
+    title: "My Documents",
+    icon: FolderOpen,
+    path: "/documents",
+  },
+
+  {
     title: "Profile",
     icon: User,
     path: "/profile",
@@ -81,15 +88,12 @@ export default function Sidebar() {
       {/* Logo */}
 
       <div className="flex items-center justify-center border-b border-white/10 p-6">
-
         <Logo />
+      </div>
 
-      </div>      {/* Navigation */}
+      {/* Navigation */}
 
-      <nav className="flex-1 space-y-2 p-5">
-
-        {menuItems.map((item) => {
-
+      <nav className="flex-1 space-y-2 overflow-y-auto p-5">        {menuItems.map((item) => {
           const Icon = item.icon;
 
           return (
@@ -104,18 +108,14 @@ export default function Sidebar() {
                 }`
               }
             >
-
               <Icon size={22} />
 
               <span>
                 {item.title}
               </span>
-
             </NavLink>
           );
-
         })}
-
       </nav>
 
       {/* Logout */}
@@ -138,13 +138,11 @@ export default function Sidebar() {
             hover:text-red-400
           "
         >
-
           <LogOut size={22} />
 
           <span>
             Logout
           </span>
-
         </button>
 
       </div>
