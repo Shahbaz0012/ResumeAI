@@ -16,51 +16,65 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  resumes Resume[]
+  resumes            Resume[]
+  generatedDocuments GeneratedDocument[]
 }
 
 model Resume {
-  id String @id @default(cuid())
-
-  title String
-
-  fileUrl String
-
-  // Parsed resume text
+  id         String  @id @default(cuid())
+  title      String
+  fileUrl    String
   resumeText String? @db.Text
-
-  atsScore Int?
+  atsScore   Int?
 
   userId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  analyses Analysis[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis           Analysis?
+  generatedDocuments GeneratedDocument[]
 }
 
 model Analysis {
   id String @id @default(cuid())
 
-  atsScore Int
-
-  summary String
-
-  skills String
-
-  missingSkills String
-
-  strengths String
-
-  improvements String
-
-  recommendedRoles String
+  atsScore         Int
+  summary          String   @db.Text
+  skills           String[] 
+  missingSkills    String[] 
+  strengths        String[] 
+  improvements     String[] 
+  recommendedRoles String[] 
 
   resumeId String @unique
 
   createdAt DateTime @default(now())
 
   resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model GeneratedDocument {
+  id      String       @id @default(cuid())
+  type    DocumentType
+  title   String
+  content String       @db.Text
+
+  userId   String
+  resumeId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume? @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+enum DocumentType {
+  COVER_LETTER
+  RESUME_SUMMARY
+  INTERVIEW_PREP
+  COLD_EMAIL
+  OTHER
 }

@@ -9,6 +9,7 @@ import dashboardRoutes from "./routes/dashboard.routes";
 import jobRoutes from "./routes/job.routes";
 import improveRoutes from "./routes/improve.routes";
 import coverLetterRoutes from "./routes/coverLetter.routes";
+import documentRoutes from "./routes/document.routes";
 
 dotenv.config();
 
@@ -39,6 +40,6 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/job", jobRoutes);
 app.use("/api/improve", improveRoutes);
-app.use(
-  "/api/cover-letter", coverLetterRoutes);
+app.use("/api/cover-letter", coverLetterRoutes);
+app.use("/api/documents", documentRoutes);
 export default app;
