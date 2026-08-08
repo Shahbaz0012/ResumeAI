@@ -11,6 +11,7 @@ interface ResumeCardProps {
   analysis: ResumeAnalysis | null;
   deleting?: boolean;
   onView: () => void;
+  onImprove: () => void;
   onDelete: () => void;
 }
 
@@ -21,23 +22,16 @@ export default function ResumeCard({
   analysis,
   deleting = false,
   onView,
+  onImprove,
   onDelete,
 }: ResumeCardProps) {
   return (
-    <div
-      className="
-        rounded-3xl
-        border
-        border-white/10
-        bg-white/[0.04]
-        p-8
-        backdrop-blur-xl
-      "
-    >
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8">
+
+      {/* Header */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
 
         <div>
-
           <h2 className="text-3xl font-bold text-white">
             {title}
           </h2>
@@ -46,9 +40,9 @@ export default function ResumeCard({
             Uploaded on{" "}
             {new Date(createdAt).toLocaleDateString()}
           </p>
-
         </div>
 
+        {/* ATS Score */}
         <div className="rounded-2xl bg-cyan-500/20 px-8 py-5 text-center">
 
           <p className="text-sm uppercase tracking-wider text-cyan-300">
@@ -63,6 +57,7 @@ export default function ResumeCard({
 
       </div>
 
+      {/* AI Analysis */}
       {analysis && (
         <div className="mt-8">
 
@@ -74,6 +69,7 @@ export default function ResumeCard({
             {analysis.summary}
           </p>
 
+          {/* Skills */}
           <div className="mt-6 flex flex-wrap gap-2">
 
             {analysis.skills
@@ -99,8 +95,10 @@ export default function ResumeCard({
         </div>
       )}
 
+      {/* Actions */}
       <div className="mt-8 flex flex-wrap gap-4">
 
+        {/* View */}
         <button
           onClick={onView}
           className="
@@ -117,6 +115,28 @@ export default function ResumeCard({
           View Report
         </button>
 
+        {/* Improve */}
+        <button
+          onClick={onImprove}
+          className="
+            rounded-xl
+            bg-gradient-to-r
+            from-cyan-500
+            to-blue-600
+            px-6
+            py-3
+            font-semibold
+            text-white
+            transition-all
+            hover:scale-105
+            hover:shadow-lg
+            hover:shadow-cyan-500/20
+          "
+        >
+          ✨ Improve Resume
+        </button>
+
+        {/* Delete */}
         <button
           onClick={onDelete}
           disabled={deleting}
@@ -135,9 +155,7 @@ export default function ResumeCard({
             disabled:opacity-50
           "
         >
-          {deleting
-            ? "Deleting..."
-            : "Delete"}
+          {deleting ? "Deleting..." : "Delete"}
         </button>
 
       </div>
