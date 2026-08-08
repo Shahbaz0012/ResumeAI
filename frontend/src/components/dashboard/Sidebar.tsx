@@ -3,6 +3,8 @@ import {
   FileText,
   History,
   Briefcase,
+  Sparkles,
+  Mail,
   User,
   Settings,
   LogOut,
@@ -38,6 +40,18 @@ const menuItems = [
   },
 
   {
+    title: "Resume Improvement",
+    icon: Sparkles,
+    path: "/resume-improve",
+  },
+
+  {
+    title: "Cover Letter",
+    icon: Mail,
+    path: "/cover-letter",
+  },
+
+  {
     title: "Profile",
     icon: User,
     path: "/profile",
@@ -63,6 +77,7 @@ export default function Sidebar() {
         bg-[#11131c]
       "
     >
+
       {/* Logo */}
 
       <div className="flex items-center justify-center border-b border-white/10 p-6">
@@ -70,6 +85,7 @@ export default function Sidebar() {
         <Logo />
 
       </div>      {/* Navigation */}
+
       <nav className="flex-1 space-y-2 p-5">
 
         {menuItems.map((item) => {
@@ -88,9 +104,12 @@ export default function Sidebar() {
                 }`
               }
             >
+
               <Icon size={22} />
 
-              <span>{item.title}</span>
+              <span>
+                {item.title}
+              </span>
 
             </NavLink>
           );
@@ -119,9 +138,12 @@ export default function Sidebar() {
             hover:text-red-400
           "
         >
+
           <LogOut size={22} />
 
-          Logout
+          <span>
+            Logout
+          </span>
 
         </button>
 
