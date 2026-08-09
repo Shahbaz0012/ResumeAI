@@ -10,68 +10,34 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-
-import { NavLink } from "react-router-dom";
-
+import { NavLink, useNavigate } from "react-router-dom"; // useNavigate import kiya
 import Logo from "../Logo";
 
 const menuItems = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/dashboard",
-  },
-
-  {
-    title: "Analyze Resume",
-    icon: FileText,
-    path: "/upload",
-  },
-
-  {
-    title: "History",
-    icon: History,
-    path: "/history",
-  },
-
-  {
-    title: "Job Match",
-    icon: Briefcase,
-    path: "/job-match",
-  },
-
-  {
-    title: "Resume Improvement",
-    icon: Sparkles,
-    path: "/resume-improve",
-  },
-
-  {
-    title: "Cover Letter",
-    icon: Mail,
-    path: "/cover-letter",
-  },
-
-  {
-    title: "My Documents",
-    icon: FolderOpen,
-    path: "/documents",
-  },
-
-  {
-    title: "Profile",
-    icon: User,
-    path: "/profile",
-  },
-
-  {
-    title: "Settings",
-    icon: Settings,
-    path: "/settings",
-  },
+  { title: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { title: "Analyze Resume", icon: FileText, path: "/upload" },
+  { title: "History", icon: History, path: "/history" },
+  { title: "Job Match", icon: Briefcase, path: "/job-match" },
+  { title: "Resume Improvement", icon: Sparkles, path: "/resume-improve" },
+  { title: "Cover Letter", icon: Mail, path: "/cover-letter" },
+  { title: "My Documents", icon: FolderOpen, path: "/documents" },
+  { title: "Profile", icon: User, path: "/profile" },
+  { title: "Settings", icon: Settings, path: "/settings" },
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate(); // navigate hook initialize kiya
+
+  // Logout function
+  const handleLogout = () => {
+    // 1. Yahan aap apna auth token ya user session clear kar sakte hain
+    // Example: localStorage.removeItem("token");
+    // Example: localStorage.clear();
+    
+    // 2. User ko login page par redirect karein
+    navigate("/login"); 
+  };
+
   return (
     <aside
       className="
@@ -84,16 +50,14 @@ export default function Sidebar() {
         bg-[#11131c]
       "
     >
-
       {/* Logo */}
-
       <div className="flex items-center justify-center border-b border-white/10 p-6">
         <Logo />
       </div>
 
       {/* Navigation */}
-
-      <nav className="flex-1 space-y-2 overflow-y-auto p-5">        {menuItems.map((item) => {
+      <nav className="flex-1 space-y-2 overflow-y-auto p-5">
+        {menuItems.map((item) => {
           const Icon = item.icon;
 
           return (
@@ -109,20 +73,16 @@ export default function Sidebar() {
               }
             >
               <Icon size={22} />
-
-              <span>
-                {item.title}
-              </span>
+              <span>{item.title}</span>
             </NavLink>
           );
         })}
       </nav>
 
       {/* Logout */}
-
       <div className="border-t border-white/10 p-5">
-
         <button
+          onClick={handleLogout} // onClick event add kiya
           className="
             flex
             w-full
@@ -139,14 +99,9 @@ export default function Sidebar() {
           "
         >
           <LogOut size={22} />
-
-          <span>
-            Logout
-          </span>
+          <span>Logout</span>
         </button>
-
       </div>
-
     </aside>
   );
 }
