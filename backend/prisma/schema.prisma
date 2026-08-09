@@ -7,74 +7,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. ADD THIS ENUM
+model User {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  password           String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  generatedDocuments GeneratedDocument[]
+  resumes            Resume[]
+}
+
+model Resume {
+  id                 String              @id @default(cuid())
+  title              String
+  fileUrl            String
+  atsScore           Int?
+  userId             String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  resumeText         String?
+  analysis           Analysis?
+  generatedDocuments GeneratedDocument[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Analysis {
+  id               String   @id @default(cuid())
+  resumeId         String   @unique
+  createdAt        DateTime @default(now())
+  atsScore         Int
+  summary          String
+  strengths        String[]
+  missingSkills    String[]
+  improvements     String[]
+  recommendedRoles String[]
+  skills           String[]
+  resume           Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model GeneratedDocument {
+  id        String       @id @default(cuid())
+  type      DocumentType
+  title     String
+  content   String
+  userId    String
+  resumeId  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  resume    Resume?      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 enum DocumentType {
   COVER_LETTER
   SUMMARY
   RESUME_IMPROVEMENT
-}
-
-model User {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resumes            Resume[]
-  generatedDocuments GeneratedDocument[]
-}
-
-model Resume {
-  id         String  @id @default(cuid())
-  title      String
-  fileUrl    String
-  resumeText String? @db.Text
-  atsScore   Int?
-
-  userId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  analysis           Analysis?
-  generatedDocuments GeneratedDocument[]
-}
-
-model Analysis {
-  id String @id @default(cuid())
-
-  atsScore         Int
-  summary          String   @db.Text
-  skills           String[] 
-  missingSkills    String[] 
-  strengths        String[] 
-  improvements     String[] 
-  recommendedRoles String[] 
-
-  resumeId String @unique
-
-  createdAt DateTime @default(now())
-
-  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-}
-
-model GeneratedDocument {
-  id      String       @id @default(cuid())
-  // 2. CHANGE THIS FROM String TO DocumentType
-  type    DocumentType 
-  title   String
-  content String       @db.Text
-
-  userId   String
-  resumeId String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume Resume? @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
