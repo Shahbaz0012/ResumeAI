@@ -1,36 +1,79 @@
 import { Router } from "express";
+
 import {
   register,
   login,
+  getProfile,
+  updateProfile,
 } from "../controllers/auth.controller";
 
 import {
   authenticate,
-  AuthRequest,
 } from "../middleware/auth.middleware";
+
 
 const router = Router();
 
-router.get("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "Auth Route Working 🚀",
-  });
-});
 
-router.post("/register", register);
+// ==========================================
+// TEST
+// ==========================================
 
-router.post("/login", login);
+router.get(
+  "/test",
+  (req, res) => {
+
+    res.json({
+      success: true,
+      message:
+        "Auth Route Working 🚀",
+    });
+
+  }
+);
+
+
+// ==========================================
+// REGISTER
+// ==========================================
+
+router.post(
+  "/register",
+  register
+);
+
+
+// ==========================================
+// LOGIN
+// ==========================================
+
+router.post(
+  "/login",
+  login
+);
+
+
+// ==========================================
+// GET PROFILE
+// ==========================================
 
 router.get(
   "/profile",
   authenticate,
-  (req: AuthRequest, res) => {
-    res.json({
-      success: true,
-      userId: req.userId,
-    });
-  }
+  getProfile
+);// ==========================================
+// UPDATE PROFILE
+// ==========================================
+
+router.put(
+  "/profile",
+  authenticate,
+  updateProfile
 );
+
+
+// ==========================================
+// EXPORT ROUTER
+// ==========================================
 
 export default router;
