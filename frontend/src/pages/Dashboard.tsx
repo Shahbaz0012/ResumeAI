@@ -23,106 +23,77 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-
-  const [stats, setStats] =
-    useState<DashboardData | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [stats, setStats] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     fetchDashboard();
-
   }, []);
 
   const fetchDashboard = async () => {
-
     try {
+      const token = localStorage.getItem("token");
 
-      const token =
-        localStorage.getItem("token");
+      const response = await api.get("/dashboard", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      const response =
-        await api.get(
-          "/dashboard",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-      setStats(
-        response.data.stats
-      );
-
+      setStats(response.data.stats);
     } catch (error) {
-
-      console.error(error);
-
+      console.error("Dashboard Error:", error);
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#090b12] flex items-center justify-center">
-
-        <Loader text="Loading Dashboard..." />
-
-      </div>
-    );
+    return <Loader text="Loading Dashboard..." />;
   }
-    return (
-    <div className="flex min-h-screen bg-[#090b12]">
 
+  return (
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-[#080b14]">
+      {/* Sidebar */}
       <Sidebar />
 
-      <main className="flex-1 p-8">
+      {/* Main Content */}
+      <main className="min-w-0 flex-1 px-4 pb-10 pt-20 sm:px-6 md:p-8 md:pt-8">
+        <div className="mx-auto w-full max-w-7xl">
+          {/* Header */}
+          <div className="mb-8 md:mb-10">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl">
+              Welcome Back 👋
+            </h1>
 
-        <div className="mb-10">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400 sm:text-base">
+              Manage your resumes and AI analysis from one place.
+            </p>
+          </div>
 
-          <h1 className="text-4xl font-bold text-white">
-            Welcome Back 👋
-          </h1>
+          {/* Dashboard Statistics */}
+          <div className="w-full min-w-0">
+            <DashboardStats
+              totalResumes={stats?.totalResumes || 0}
+              highestATS={stats?.highestATS || 0}
+              averageATS={stats?.averageATS || 0}
+            />
+          </div>
 
-          <p className="mt-2 text-gray-400">
-            Manage your resumes and AI analysis from one place.
-          </p>
+          {/* Latest Resume + Quick Actions */}
+          <div className="mt-8 grid min-w-0 grid-cols-1 gap-6 lg:mt-10 lg:grid-cols-2 lg:gap-8">
+            <div className="min-w-0">
+              <LatestResume
+                latestResume={stats?.latestResume || null}
+              />
+            </div>
 
+            <div className="min-w-0">
+              <QuickActions />
+            </div>
+          </div>
         </div>
-
-        <DashboardStats
-          totalResumes={
-            stats?.totalResumes || 0
-          }
-          highestATS={
-            stats?.highestATS || 0
-          }
-          averageATS={
-            stats?.averageATS || 0
-          }
-        />
-
-        <div className="mt-10 grid gap-8 lg:grid-cols-2">
-
-          <LatestResume
-            latestResume={
-              stats?.latestResume || null
-            }
-          />
-
-          <QuickActions />
-
-        </div>
-
       </main>
-
     </div>
   );
 }
