@@ -145,4 +145,8 @@ Secure authentication system with:
              │            Neon
              │         PostgreSQL
              │
+<<<<<<< Updated upstream
              └──────── API ──────────┘
+=======
+             └──────── API ──────────┘
+>>>>>>> Stashed changes
