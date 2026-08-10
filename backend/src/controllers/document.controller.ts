@@ -1,7 +1,5 @@
 import { Response } from "express";
-
 import { AuthRequest } from "../middleware/auth.middleware";
-
 import {
   saveGeneratedDocument,
   getUserDocuments,
@@ -30,37 +28,31 @@ export const createDocument = async (
     if (!type || !title || !content) {
       return res.status(400).json({
         success: false,
-        message:
-          "Type, title and content are required.",
+        message: "Type, title and content are required.",
       });
     }
 
-    const document =
-      await saveGeneratedDocument({
-        userId: req.userId,
-        resumeId,
-        type,
-        title,
-        content,
-      });
+    const document = await saveGeneratedDocument({
+      userId: req.userId,
+      resumeId,
+      type,
+      title,
+      content,
+    });
 
     return res.status(201).json({
       success: true,
       document,
     });
-
   } catch (error: any) {
-
     console.error(
       "========== CREATE DOCUMENT ERROR =========="
     );
-
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message || "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };
@@ -77,31 +69,26 @@ export const getDocuments = async (
       });
     }
 
-    const documents =
-      await getUserDocuments(
-        req.userId
-      );
+    const documents = await getUserDocuments(req.userId);
 
     return res.status(200).json({
       success: true,
       documents,
     });
-
   } catch (error: any) {
-
     console.error(
       "========== GET DOCUMENTS ERROR =========="
     );
-
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message || "Server Error",
+      message: error.message || "Server Error",
     });
   }
-};export const deleteDocument = async (
+};
+
+export const deleteDocument = async (
   req: AuthRequest,
   res: Response
 ) => {
@@ -113,7 +100,8 @@ export const getDocuments = async (
       });
     }
 
-    const { id } = req.params;
+    // FIX: Explicitly cast the id as a string to resolve the TS error
+    const id = req.params.id as string;
 
     if (!id) {
       return res.status(400).json({
@@ -131,19 +119,13 @@ export const getDocuments = async (
       success: true,
       message: "Document deleted successfully.",
     });
-
   } catch (error: any) {
-
     console.error(
       "========== DELETE DOCUMENT ERROR =========="
     );
-
     console.error(error);
 
-    if (
-      error.message ===
-      "Document not found."
-    ) {
+    if (error.message === "Document not found.") {
       return res.status(404).json({
         success: false,
         message: "Document not found.",
@@ -152,8 +134,7 @@ export const getDocuments = async (
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message || "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };

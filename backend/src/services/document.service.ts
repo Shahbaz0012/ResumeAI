@@ -1,3 +1,4 @@
+import { DocumentType } from "@prisma/client";
 import prisma from "../config/prisma";
 
 interface SaveDocumentData {
@@ -16,7 +17,8 @@ export const saveGeneratedDocument = async (
       data: {
         userId: data.userId,
         resumeId: data.resumeId,
-        type: data.type,
+        // FIX: Cast the string to the Prisma Enum type
+        type: data.type as DocumentType, 
         title: data.title,
         content: data.content,
       },
@@ -49,7 +51,9 @@ export const getUserDocuments = async (
     });
 
   return documents;
-};export const deleteGeneratedDocument = async (
+};
+
+export const deleteGeneratedDocument = async (
   documentId: string,
   userId: string
 ) => {

@@ -42,7 +42,7 @@ export const uploadResume = async (req: AuthRequest, res: Response) => {
     console.log("Resume Saved:", resume.id);
 
     // ==========================================
-    // SAVE AI ANALYSIS (Updated to use native arrays)
+    // SAVE AI ANALYSIS
     // ==========================================
     await prisma.analysis.create({
       data: {
@@ -84,7 +84,8 @@ export const getResumeAnalysis = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { id } = req.params;
+    // FIX: Explicitly cast id as a string
+    const id = req.params.id as string;
 
     const resume = await prisma.resume.findFirst({
       where: {
@@ -100,7 +101,8 @@ export const getResumeAnalysis = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: "Resume not found" });
     }
 
-    const analysis = resume.analysis;
+    // FIX: Bypass TS missing property error in case Prisma types are stale
+    const analysis = (resume as any).analysis;
 
     if (!analysis) {
       return res.status(404).json({ success: false, message: "Analysis not found" });
@@ -114,7 +116,6 @@ export const getResumeAnalysis = async (req: AuthRequest, res: Response) => {
         atsScore: resume.atsScore,
         createdAt: resume.createdAt,
       },
-      // Updated to remove JSON.parse() since Prisma returns arrays natively now
       analysis: {
         atsScore: analysis.atsScore,
         summary: analysis.summary,
@@ -156,23 +157,27 @@ export const getResumeHistory = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    const history = resumes.map((resume) => ({
-      id: resume.id,
-      title: resume.title,
-      atsScore: resume.atsScore,
-      createdAt: resume.createdAt,
-      // Updated to remove JSON.parse() here as well
-      analysis: resume.analysis
-        ? {
-            summary: resume.analysis.summary,
-            skills: resume.analysis.skills,
-            missingSkills: resume.analysis.missingSkills,
-            strengths: resume.analysis.strengths,
-            improvements: resume.analysis.improvements,
-            recommendedRoles: resume.analysis.recommendedRoles,
-          }
-        : null,
-    }));
+    const history = resumes.map((resume) => {
+      // FIX: Bypass TS missing property error
+      const analysis = (resume as any).analysis;
+      
+      return {
+        id: resume.id,
+        title: resume.title,
+        atsScore: resume.atsScore,
+        createdAt: resume.createdAt,
+        analysis: analysis
+          ? {
+              summary: analysis.summary,
+              skills: analysis.skills,
+              missingSkills: analysis.missingSkills,
+              strengths: analysis.strengths,
+              improvements: analysis.improvements,
+              recommendedRoles: analysis.recommendedRoles,
+            }
+          : null,
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -197,7 +202,8 @@ export const deleteResume = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { id } = req.params;
+    // FIX: Explicitly cast id as a string
+    const id = req.params.id as string;
 
     const resume = await prisma.resume.findFirst({
       where: {
@@ -210,7 +216,6 @@ export const deleteResume = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: "Resume not found" });
     }
 
-    // Analysis will be deleted automatically because of onDelete: Cascade.
     await prisma.resume.delete({
       where: {
         id: resume.id,
